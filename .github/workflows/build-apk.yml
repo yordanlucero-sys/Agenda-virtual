@@ -1,1 +1,42 @@
+name: Construir Agenda Virtual APK
 
+on:
+workflow_dispatch:
+
+jobs:
+build:
+runs-on: ubuntu-latest
+
+steps:
+  - name: Descargar proyecto
+    uses: actions/checkout@v4
+
+  - name: Preparar archivos
+    run: |
+      sudo apt-get update
+      sudo apt-get install -y unzip
+      unzip -o agenda_virtual_proyecto.zip -d .
+
+  - name: Instalar Flutter
+    uses: subosito/flutter-action@v2
+    with:
+      channel: stable
+
+  - name: Preparar proyecto Android
+    working-directory: agenda_virtual
+    run: flutter create . --platforms=android --org com.agendavirtual.app
+
+  - name: Instalar dependencias
+    working-directory: agenda_virtual
+    run: flutter pub get
+
+  - name: Compilar APK
+    working-directory: agenda_virtual
+    run: flutter build apk --release
+
+  - name: Guardar APK
+    uses: actions/upload-artifact@v4
+    with:
+      name: AgendaVirtual-APK
+      path: agenda_virtual/build/app/outputs/flutter-apk/app-release.apk
+      if-no-files-found: error
